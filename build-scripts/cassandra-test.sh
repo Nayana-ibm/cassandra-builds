@@ -114,19 +114,14 @@ _main() {
       ant clean jar stress-build-test
       ant $target -Dtmp.dir="$(pwd)/tmp" || echo "failed $target"
       ;;
-    "fqltool-test-s390x")
-      # hard fail on test compilation, but dont fail the test run so unstable test reports are processed
-      ant clean jar fqltool-build-test
-      ant $target -Dtmp.dir="$(pwd)/tmp" || echo "failed $target"
+    "test")
+      _run_testlist "unit" "testclasslist-s390x" "${split_chunk}" "$(_timeout_for 'test.timeout')"
       ;;
-    "test-s390x")
-      _run_testlist "unit" "testclasslist" "${split_chunk}" "$(_timeout_for 'test.timeout')"
+    "test-cdc")
+      _run_testlist "unit" "testclasslist-cdc-s390x" "${split_chunk}" "$(_timeout_for 'test.timeout')"
       ;;
-    "test-cdc-s390x")
-      _run_testlist "unit" "testclasslist-cdc" "${split_chunk}" "$(_timeout_for 'test.timeout')"
-      ;;
-    "test-compression-s390x")
-      _run_testlist "unit" "testclasslist-compression" "${split_chunk}" "$(_timeout_for 'test.timeout')"
+    "test-compression")
+      _run_testlist "unit" "testclasslist-compression-s390x" "${split_chunk}" "$(_timeout_for 'test.timeout')"
       ;;    
     "cqlsh-test")
       ./pylib/cassandra-cqlsh-tests.sh $(pwd)
