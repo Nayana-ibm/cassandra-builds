@@ -10,6 +10,9 @@ command -v ant >/dev/null 2>&1 || { echo >&2 "ant needs to be installed"; exit 1
 command -v git >/dev/null 2>&1 || { echo >&2 "git needs to be installed"; exit 1; }
 [ -f "build.xml" ] || { echo >&2 "build.xml must exist"; exit 1; }
 
+# chcek arch
+arch=`uname -m`
+
 # print debug information on versions
 ant -version
 git --version
@@ -100,9 +103,40 @@ _main() {
       ;;
   esac
 
-  export TMP_DIR="$(pwd)/tmp"
-  mkdir -p ${TMP_DIR}
+ export TMP_DIR="$(pwd)/tmp"
+ mkdir -p ${TMP_DIR}
 
+ if [ "$arch" == "s390x" ]
+ then
+   case $target in
+    "stress-test")
+      # hard fail on test compilation, but dont fail the test run as unstable test reports are processed
+      ant clean jar stress-build-test
+      ant $target -Dtmp.dir="$(pwd)/tmp" || echo "failed $target"
+      ;;
+    "fqltool-test-s390x")
+      # hard fail on test compilation, but dont fail the test run so unstable test reports are processed
+      ant clean jar fqltool-build-test
+      ant $target -Dtmp.dir="$(pwd)/tmp" || echo "failed $target"
+      ;;
+    "test-s390x")
+      _run_testlist "unit" "testclasslist" "${split_chunk}" "$(_timeout_for 'test.timeout')"
+      ;;
+    "test-cdc-s390x")
+      _run_testlist "unit" "testclasslist-cdc" "${split_chunk}" "$(_timeout_for 'test.timeout')"
+      ;;
+    "test-compression-s390x")
+      _run_testlist "unit" "testclasslist-compression" "${split_chunk}" "$(_timeout_for 'test.timeout')"
+      ;;    
+    "cqlsh-test")
+      ./pylib/cassandra-cqlsh-tests.sh $(pwd)
+      ;;
+    *)
+      echo "unregconised \"$target\""
+      exit 1
+      ;;
+  esac   
+else    
   case $target in
     "stress-test")
       # hard fail on test compilation, but dont fail the test run as unstable test reports are processed
@@ -160,6 +194,7 @@ _main() {
       exit 1
       ;;
   esac
+ fi 
 }
 
 _main "$@"
