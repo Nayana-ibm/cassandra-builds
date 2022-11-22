@@ -103,8 +103,8 @@ _main() {
       ;;
   esac
 
- export TMP_DIR="$(pwd)/tmp"
- mkdir -p ${TMP_DIR}
+  export TMP_DIR="$(pwd)/tmp"
+  mkdir -p ${TMP_DIR}
 
  if [ "$arch" == "s390x" ]
  then
